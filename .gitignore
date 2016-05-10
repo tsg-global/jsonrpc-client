@@ -1,5 +1,6 @@
 *.gem
-coverage
-.rvmrc
-Gemfile.lock
 *.swp
+.rvmrc
+/.bundle
+coverage
+Gemfile.lock

@@ -1,25 +1,31 @@
+require 'jsonrpc/utils'
+
 module JSONRPC
   class Request
+    attr_reader :id
+    attr_reader :jsonrpc
+    attr_reader :method
+    attr_reader :params
 
-    attr_accessor :method, :params, :id
-    def initialize(method, params, id = nil)
+    def initialize(method:, params: nil, id: nil)
+      @jsonrpc = '2.0'.freeze
       @method = method
       @params = params
-      @id = id
+      @id ||= ::JSONRPC::Utils.generate_id
     end
 
     def to_h
       h = {
-        'jsonrpc' => '2.0',
-        'method'  => @method
+        'jsonrpc' => @jsonrpc,
+        'method'  => @method,
+        'id' => @id
       }
-      h.merge!('params' => @params) if !!@params && !params.empty?
-      h.merge!('id' => id)
+      h.merge!('params' => @params) if @params && !params.empty?
+      h
     end
 
     def to_json(*a)
       MultiJson.encode(self.to_h)
     end
-
   end
 end

@@ -1,6 +1,7 @@
 module JSONRPC
   class Response
-    attr_accessor :result, :error, :id
+    attr_reader :id
+    attr_accessor :result, :error
 
     def initialize(id)
       @id = id
@@ -25,6 +26,5 @@ module JSONRPC
       @error = data['error'] if !!data['error']
       @result = data['result'] if !!data['result']
     end
-
   end
 end
