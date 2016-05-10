@@ -6,8 +6,11 @@ require 'jsonrpc/helper'
 module JSONRPC
   # @abstract
   class ClientBase
+    attr_reader :url
+    attr_reader :options
+
     def initialize(url, **opts)
-      @url = ::URI.parse(url).to_s
+      @url = ::URI.parse(url).to_s.freeze
       @options = opts
       reload
     end
@@ -18,7 +21,7 @@ module JSONRPC
     end
 
     def services
-      @api ||= @helper.connection.get
+      @api ||= @helper.connection.get @url
       @api['services']
     end
   end
