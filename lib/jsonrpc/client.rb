@@ -21,55 +21,7 @@ module JSONRPC
   end
 
   class Client < ClientBase
-    def method_missing(method, *args, &block)
-      invoke(method, args)
-    end
-
-    def invoke(method, args, options = nil)
-      resp = send_single_request(method.to_s, args, options)
-
-      begin
-        data = ::MultiJson.decode(resp, ::JSONRPC.decode_options)
-      rescue
-        raise ::JSONRPC::Error::InvalidJSON.new(resp)
-      end
-
-      process_single_response(data)
-    rescue => e
-      e.extend(::JSONRPC::Error)
-      raise
-    end
-
-    private
-    def send_single_request(method, args, options)
-      post_data = ::MultiJson.encode({
-        'jsonrpc' => ::JSONRPC::JSON_RPC_VERSION,
-        'method'  => method,
-        'params'  => args,
-        'id'      => ::JSONRPC::Utils.generate_id
-      })
-      resp = @helper.connection.post(@url, post_data, @helper.options(options))
-
-      if resp.nil? || resp.body.nil? || resp.body.empty?
-        raise ::JSONRPC::Error::InvalidResponse.new
-      end
-
-      resp.body
-    end
-
-    def process_single_response(data)
-      raise ::JSONRPC::Error::InvalidResponse.new unless valid_response?(data)
-
-      if data['error']
-        code = data['error']['code']
-        msg = data['error']['message']
-        raise ::JSONRPC::Error::ServerError.new(code, msg)
-      end
-
-      data['result']
-    end
-
-    def valid_response?(data)
+    private def valid_response?(data)
       return false if !data.is_a?(::Hash)
       return false if data['jsonrpc'] != ::JSONRPC::JSON_RPC_VERSION
       return false if !data.has_key?('id')
@@ -88,6 +40,53 @@ module JSONRPC
       true
     rescue
       false
+    end
+
+    private def send_single_request(method, args, options)
+      post_data = ::MultiJson.encode({
+        'jsonrpc' => ::JSONRPC::JSON_RPC_VERSION,
+        'method'  => method,
+        'params'  => args,
+        'id'      => ::JSONRPC::Utils.generate_id
+      })
+      resp = @helper.connection.post(@url, post_data, @helper.options(options))
+
+      if resp.nil? || resp.body.nil? || resp.body.empty?
+        raise ::JSONRPC::Error::InvalidResponse.new
+      end
+
+      resp.body
+    end
+
+    private def process_single_response(data)
+      raise ::JSONRPC::Error::InvalidResponse.new unless valid_response?(data)
+
+      if data['error']
+        code = data['error']['code']
+        msg = data['error']['message']
+        raise ::JSONRPC::Error::ServerError.new(code, msg)
+      end
+
+      data['result']
+    end
+
+    def invoke(method, args, options = nil)
+      resp = send_single_request(method.to_s, args, options)
+
+      begin
+        data = ::MultiJson.decode(resp, ::JSONRPC.decode_options)
+      rescue
+        raise ::JSONRPC::Error::InvalidJSON.new(resp)
+      end
+
+      process_single_response(data)
+    rescue => e
+      e.extend(::JSONRPC::Error)
+      raise
+    end
+
+    def call(method, *args, &block)
+      invoke(method, args)
     end
   end
 end

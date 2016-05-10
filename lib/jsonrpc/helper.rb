@@ -1,14 +1,14 @@
 module JSONRPC
   class Helper
-    def initialize(options)
-      @options = options
+    def initialize(opts)
+      @options = opts
       @options[:content_type] ||= 'application/json'
       @connection = @options.delete(:connection)
     end
 
     def options(additional_options = nil)
       if additional_options
-        additional_options.merge(@options)
+        @options.merge(additional_options)
       else
         @options
       end

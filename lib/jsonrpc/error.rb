@@ -1,14 +1,20 @@
 module JSONRPC
   module Error
+    class ConnectionDead < StandardError
+      def initialize(msg = nil)
+        super msg || "Connection is dead."
+      end
+    end
+
     class InvalidResponse < StandardError
-      def initialize()
-        super('Invalid or empty response from server.')
+      def initialize
+        super 'Invalid or empty response from server.'
       end
     end
 
     class InvalidJSON < StandardError
       def initialize(json)
-        super("Couldn't parse JSON string received from server:\n#{json}")
+        super "Couldn't parse JSON string received from server:\n#{json}"
       end
     end
 
@@ -18,7 +24,7 @@ module JSONRPC
       def initialize(code, message)
         @code = code
         @response_error = message
-        super("Server error #{code}: #{message}")
+        super "Server error #{code}: #{message}"
       end
     end
   end

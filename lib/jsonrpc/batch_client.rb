@@ -17,12 +17,12 @@ module JSONRPC
       @alive = false
     end
 
-    def method_missing(sym, *args, &block)
+    def call(sym, *args, &block)
       if @alive
         request = ::JSONRPC::Request.new(method: sym.to_s, params: args)
         push_batch_request(request)
       else
-        super
+        raise ConnectionDead
       end
     end
 

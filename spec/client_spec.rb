@@ -14,24 +14,15 @@ module JSONRPC
     after(:each) do
     end
 
-    describe "hidden methods" do
-      it "should reveal inspect" do
-        expect(Client.new(SPEC_URL).inspect).to match /JSONRPC::Client/
+    describe "#call" do
+      let(:expected) do
+        MultiJson.encode(
+          'jsonrpc' => '2.0',
+          'method'  => 'foo',
+          'params'  => [1,2,3],
+          'id'      => 1
+        )
       end
-
-      it "should reveal to_s" do
-        expect(Client.new(SPEC_URL).to_s).to match /JSONRPC::Client/
-      end
-    end
-
-    describe "#invoke" do
-      let(:expected) { MultiJson.encode({
-         'jsonrpc' => '2.0',
-         'method'  => 'foo',
-         'params'  => [1,2,3],
-         'id'      => 1
-        })
-      }
 
       before(:each) do
         response = MultiJson.encode(BOILERPLATE.merge({'result' => 42}))
@@ -70,7 +61,7 @@ module JSONRPC
           expect(connection).to receive(:post).with(SPEC_URL, @expected, content_type: 'application/json').and_return(@resp_mock)
           expect(@resp_mock).to receive(:body).at_least(:once).and_return(response)
           client = Client.new(SPEC_URL, connection: connection)
-          expect(client.foo(1,2,3)).to eq(42)
+          expect(client.call(:foo, 1,2,3)).to eq(42)
         end
 
         it "sends a valid JSON-RPC request with custom options" do
@@ -78,7 +69,7 @@ module JSONRPC
           expect(connection).to receive(:post).with(SPEC_URL, @expected, content_type: 'application/json', timeout: 10000).and_return(@resp_mock)
           expect(@resp_mock).to receive(:body).at_least(:once).and_return(response)
           client = Client.new(SPEC_URL, timeout: 10000, connection: connection)
-          expect(client.foo(1,2,3)).to eq(42)
+          expect(client.call(:foo, 1,2,3)).to eq(42)
         end
 
         it "sends a valid JSON-RPC request with custom content_type" do
@@ -86,7 +77,7 @@ module JSONRPC
           expect(connection).to receive(:post).with(SPEC_URL, @expected, content_type: 'application/json-rpc', timeout: 10000).and_return(@resp_mock)
           expect(@resp_mock).to receive(:body).at_least(:once).and_return(response)
           client = Client.new(SPEC_URL, timeout: 10000, content_type: 'application/json-rpc', connection: connection)
-          expect(client.foo(1,2,3)).to eq(42)
+          expect(client.call(:foo, 1,2,3)).to eq(42)
         end
       end
     end
@@ -113,10 +104,10 @@ module JSONRPC
 
         sum = subtract = foo = data = nil
         client = BatchClient.new(SPEC_URL, connection: connection) do |batch|
-          sum = batch.sum(1,2,4)
-          subtract = batch.subtract(42,23)
-          foo = batch.foo_get('name' => 'myself')
-          data = batch.get_data
+          sum = batch.call :sum, 1,2,4
+          subtract = batch.call :subtract, 42, 23
+          foo = batch.call :foo_get, 'name' => 'myself'
+          data = batch.call :get_data
         end
 
         expect(sum).to be_succeeded
