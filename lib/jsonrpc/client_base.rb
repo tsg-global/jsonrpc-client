@@ -20,9 +20,15 @@ module JSONRPC
       @api = nil
     end
 
+    def api
+      @api ||= begin
+        response = @helper.connection.get @url
+        MultiJson.load(response.body)
+      end
+    end
+
     def services
-      @api ||= @helper.connection.get @url
-      @api['services']
+      api['services']
     end
   end
 end
