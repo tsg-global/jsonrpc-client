@@ -30,5 +30,9 @@ module JSONRPC
     def services
       api['services']
     end
+
+    def rpc_methods
+      api['methods']
+    end
   end
 end
