@@ -16,7 +16,7 @@ module JSONRPC
 
     describe "#call" do
       let(:expected) do
-        MultiJson.encode(
+        Oj.dump(
           'jsonrpc' => '2.0',
           'method'  => 'foo',
           'params'  => [1,2,3],
@@ -25,7 +25,7 @@ module JSONRPC
       end
 
       before(:each) do
-        response = MultiJson.encode(BOILERPLATE.merge({'result' => 42}))
+        response = Oj.dump(BOILERPLATE.merge({'result' => 42}))
         expect(@resp_mock).to receive(:body).at_least(:once).and_return(response)
         @client = Client.new(SPEC_URL, connection: connection)
       end
@@ -48,7 +48,7 @@ module JSONRPC
     describe "sending a single request" do
       context "when using positional parameters" do
         before(:each) do
-          @expected = MultiJson.encode({
+          @expected = Oj.dump({
             'jsonrpc' => '2.0',
             'method'  => 'foo',
             'params'  => [1,2,3],
@@ -57,7 +57,7 @@ module JSONRPC
         end
 
         it "sends a valid JSON-RPC request and returns the result" do
-          response = MultiJson.encode(BOILERPLATE.merge({'result' => 42}))
+          response = Oj.dump(BOILERPLATE.merge({'result' => 42}))
           expect(connection).to receive(:post).with(SPEC_URL, @expected, content_type: 'application/json').and_return(@resp_mock)
           expect(@resp_mock).to receive(:body).at_least(:once).and_return(response)
           client = Client.new(SPEC_URL, connection: connection)
@@ -65,7 +65,7 @@ module JSONRPC
         end
 
         it "sends a valid JSON-RPC request with custom options" do
-          response = MultiJson.encode(BOILERPLATE.merge({'result' => 42}))
+          response = Oj.dump(BOILERPLATE.merge({'result' => 42}))
           expect(connection).to receive(:post).with(SPEC_URL, @expected, content_type: 'application/json', timeout: 10000).and_return(@resp_mock)
           expect(@resp_mock).to receive(:body).at_least(:once).and_return(response)
           client = Client.new(SPEC_URL, timeout: 10000, connection: connection)
@@ -73,7 +73,7 @@ module JSONRPC
         end
 
         it "sends a valid JSON-RPC request with custom content_type" do
-          response = MultiJson.encode(BOILERPLATE.merge({'result' => 42}))
+          response = Oj.dump(BOILERPLATE.merge({'result' => 42}))
           expect(connection).to receive(:post).with(SPEC_URL, @expected, content_type: 'application/json-rpc', timeout: 10000).and_return(@resp_mock)
           expect(@resp_mock).to receive(:body).at_least(:once).and_return(response)
           client = Client.new(SPEC_URL, timeout: 10000, content_type: 'application/json-rpc', connection: connection)
@@ -84,14 +84,14 @@ module JSONRPC
 
     context "sending a batch request" do
       it "sends a valid JSON-RPC batch request and puts the results in the response objects" do
-        batch = MultiJson.encode([
+        batch = Oj.dump([
           { "jsonrpc" => "2.0", "method" => "sum", "id" => "1", "params" => [1,2,4] },
           { "jsonrpc" => "2.0", "method" => "subtract", "id" => "2", "params" => [42,23] },
           { "jsonrpc" => "2.0", "method" => "foo_get", "id" => "5", "params" => [{"name" => "myself"}] },
           { "jsonrpc" => "2.0", "method" => "get_data", "id" => "9" }
         ])
 
-        response = MultiJson.encode([
+        response = Oj.dump([
           { "jsonrpc" => "2.0", "result" => 7, "id" => "1" },
           { "jsonrpc" => "2.0", "result" => 19, "id" => "2" },
           { "jsonrpc" => "2.0", "error" => {"code" => -32601, "message" => "Method not found."}, "id" => "5" },

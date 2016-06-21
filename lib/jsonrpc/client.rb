@@ -43,7 +43,7 @@ module JSONRPC
     end
 
     private def send_single_request(method, args, options)
-      post_data = ::MultiJson.encode({
+      post_data = ::Oj.dump({
         'jsonrpc' => ::JSONRPC::JSON_RPC_VERSION,
         'method'  => method,
         'params'  => args,
@@ -74,7 +74,7 @@ module JSONRPC
       resp = send_single_request(method.to_s, args, options)
 
       begin
-        data = ::MultiJson.decode(resp, ::JSONRPC.decode_options)
+        data = ::Oj.load(resp, ::JSONRPC.decode_options)
       rescue
         raise ::JSONRPC::Error::InvalidJSON.new(resp)
       end

@@ -25,7 +25,7 @@ module JSONRPC
     end
 
     def to_json(*a)
-      MultiJson.encode(self.to_h)
+      Oj.dump(self.to_h)
     end
   end
 end

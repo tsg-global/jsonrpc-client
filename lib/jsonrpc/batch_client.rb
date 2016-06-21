@@ -28,7 +28,7 @@ module JSONRPC
 
   private
     def send_batch_request(batch)
-      post_data = ::MultiJson.encode(batch)
+      post_data = ::Oj.dump(batch)
 
       resp = @helper.connection.post(@url, post_data, @helper.options)
       if resp.nil? || resp.body.nil? || resp.body.empty?
@@ -61,7 +61,7 @@ module JSONRPC
       response = send_batch_request(batch)
 
       begin
-        responses = ::MultiJson.decode(response, ::JSONRPC.decode_options)
+        responses = ::Oj.load(response, ::JSONRPC.decode_options)
       rescue
         raise ::JSONRPC::Error::InvalidJSON.new(json)
       end

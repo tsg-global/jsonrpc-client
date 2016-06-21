@@ -1,5 +1,5 @@
 require 'bundler/setup'
 require 'jsonrpc-client'
-require 'multi_json'
+require 'oj'
 
 SPEC_URL = 'http://localhost:8999'

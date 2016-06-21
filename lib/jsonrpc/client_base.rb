@@ -1,4 +1,4 @@
-require 'multi_json'
+require 'oj'
 require 'faraday'
 require 'uri'
 require 'jsonrpc/helper'
@@ -23,7 +23,7 @@ module JSONRPC
     def api
       @api ||= begin
         response = @helper.connection.get @url
-        MultiJson.load(response.body)
+        Oj.load(response.body)
       end
     end
 
